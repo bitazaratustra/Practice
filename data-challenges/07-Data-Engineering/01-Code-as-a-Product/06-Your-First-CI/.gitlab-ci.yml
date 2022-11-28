@@ -1,0 +1,12 @@
+image: python:3.6
+
+stages:
+- test
+
+test_code:
+  stage: test
+  before_script:
+  - python -V # Print out python version for debugging
+  - make clean install
+  script:
+  - make test

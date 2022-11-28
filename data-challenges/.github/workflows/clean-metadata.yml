@@ -1,0 +1,53 @@
+name: Clean notebooks metadata
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  clean-metadata:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout PR HEAD history
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Add pipconf
+        run: |
+          mkdir ~/.pip
+          cat << EOF >> ~/.pip/pip.conf
+          [global]
+          trusted-host = pypi.fury.io
+          extra-index-url = https://${{ secrets.GEMFURY_PULL_TOKEN }}@pypi.fury.io/ssaunier
+          EOF
+
+      - name: Install dependencies
+        run: |
+          pip install -U pip
+          pip install wagon_common nbcleanmeta
+
+      - name: Cleaning
+        id: cleaning
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          COMMON_ANCESTOR="$(git merge-base origin/${{ github.event.repository.default_branch }} HEAD)"
+          git diff --name-only --diff-filter AM "${COMMON_ANCESTOR}" | sed 's/^/"/g' | sed 's/$/"/g' | tr '\n' ' ' | xargs nbcleanmeta run
+          if ! git diff --exit-code; then
+            git add .
+            git commit -m "clean notebooks metadata"
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+                CLEAN_REMOTE_BRANCH="${{ github.event.pull_request.head.ref }}"
+              else
+                CLEAN_REMOTE_BRANCH="${{ github.event.repository.default_branch }}"
+            fi
+            git push origin HEAD:$CLEAN_REMOTE_BRANCH
+          fi
