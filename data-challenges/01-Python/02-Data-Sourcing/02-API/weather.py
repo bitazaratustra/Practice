@@ -9,27 +9,37 @@ def search_city(query):
     '''Look for a given city. If multiple options are returned, have the user choose between them.
        Return one city (or None)
     '''
-    response = requests.get(f'{base_uri}/geo/1.0/direct?q={query}').json()
-    if len(response) == 0:
-        print('This city doesnt exist')
-        return main()
-    place = response[0]
-    return place['lat'], place['lon']
+    cities = requests.get(f'{base_uri}/geo/1.0/direct?q={query}').json()
+    if not cities:
+        print(f"Sorry, OpenWeather does not know about {query}...")
+        return None
+
+    if len(cities) == 1:
+        return cities[0]
+
+    for i, city in enumerate(cities):
+        print(f"{i + 1}. {city['name']},{city['country']}")
+    index = int(input("Multiple matches found, which city did you mean?\n> ")) - 1
+    return cities[index]
+
 
 def weather_forecast(lat, lon):
     '''Return a 5-day weather forecast for the city, given its latitude and longitude.'''
-    response = requests.get(f'{base_uri}/data/2.5/forecast?lat={lat}&lon={lon}').json()
-    for i in range(len(response['list']), len(response['list'][-1]), 7):
-        print(response['list'][i]['main']['temp'])
+    forecasts = requests.get(base_uri, params={'lat': lat, 'lon': lon, 'units': 'metric'}).json()['list']
+    return forecasts[::8]
 
 def main():
     '''Ask user for a city and display weather forecast'''
     query = input("City?\n> ")
-    try:
-        city = search_city(query)
-        weather_forecast(city[0], city[1])
-    except len(city) == 0:
-        TypeError ('Escribiste con los codos!')
+    city = search_city(query)
+    # TODO: Display weather forecast for a given city
+    # $CHALLENGIFY_BEGIN
+    if city:
+        daily_forecasts = weather_forecast(city['lat'], city['lon'])
+        for forecast in daily_forecasts:
+            max_temp = round(forecast['main']['temp_max'])
+            print(f"{forecast['dt_txt'][:10]}: {forecast['weather'][0]['main']} ({max_temp}°C)")
+
 
 if __name__ == '__main__':
     try:
