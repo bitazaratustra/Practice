@@ -9,23 +9,22 @@ def search_city(query):
     '''Look for a given city. If multiple options are returned, have the user choose between them.
        Return one city (or None)
     '''
-    cities = requests.get(f'{base_uri}/geo/1.0/direct?q={query}').json()
+    cities = requests.get(f'{base_uri}/geo/1.0/direct?q={query}&limit=5').json()
     if not cities:
         print(f"Sorry, OpenWeather does not know about {query}...")
         return None
-
     if len(cities) == 1:
         return cities[0]
-
     for i, city in enumerate(cities):
         print(f"{i + 1}. {city['name']},{city['country']}")
     index = int(input("Multiple matches found, which city did you mean?\n> ")) - 1
     return cities[index]
 
-
 def weather_forecast(lat, lon):
     '''Return a 5-day weather forecast for the city, given its latitude and longitude.'''
-    forecasts = requests.get(base_uri, params={'lat': lat, 'lon': lon, 'units': 'metric'}).json()['list']
+    params={'lat': lat, 'lon': lon, 'units': 'metric'}
+    url = f"{base_uri}/data/2.5/forecast"
+    forecasts = requests.get(url, params).json()['list']
     return forecasts[::8]
 
 def main():
