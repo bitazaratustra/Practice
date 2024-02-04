@@ -1,9 +1,21 @@
 # pylint: disable=missing-docstring, C0103
+import sqlite3
+
+conn = sqlite3.connect('data/movies.sqlite')
+#db = conn.cursor()
+#rows = db.fetchall()
+
+
 
 def directors_count(db):
     # return the number of directors contained in the database
-    pass  # YOUR CODE HERE
+    db = conn.cursor()
+    query = 'SELECT COUNT(id) FROM directors'
+    db.execute(query)
+    results = db.fetchall()
+    print(int(results[0][0]))
 
+directors_count(conn)
 
 def directors_list(db):
     # return the list of all the directors sorted in alphabetical order
