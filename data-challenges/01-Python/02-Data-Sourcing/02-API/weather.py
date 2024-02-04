@@ -1,15 +1,18 @@
+"""Module for handling weather information.
 
+This module provides functions to display the weather forecast for a given city.
+"""
 import sys
 import requests
 
-base_uri = "https://weather.lewagon.com"
+BASE_URI = "https://weather.lewagon.com"
 
 
 def search_city(query):
     '''Look for a given city. If multiple options are returned, have the user choose between them.
        Return one city (or None)
     '''
-    cities = requests.get(f'{base_uri}/geo/1.0/direct?q={query}&limit=5').json()
+    cities = requests.get(f'{BASE_URI}/geo/1.0/direct?q={query}&limit=5').json()
     if not cities:
         print(f"Sorry, OpenWeather does not know about {query}...")
         return None
@@ -23,7 +26,7 @@ def search_city(query):
 def weather_forecast(lat, lon):
     '''Return a 5-day weather forecast for the city, given its latitude and longitude.'''
     params={'lat': lat, 'lon': lon, 'units': 'metric'}
-    url = f"{base_uri}/data/2.5/forecast"
+    url = f"{BASE_URI}/data/2.5/forecast"
     forecasts = requests.get(url, params).json()['list']
     return forecasts[::8]
 
@@ -31,8 +34,7 @@ def main():
     '''Ask user for a city and display weather forecast'''
     query = input("City?\n> ")
     city = search_city(query)
-    # TODO: Display weather forecast for a given city
-    # $CHALLENGIFY_BEGIN
+
     if city:
         daily_forecasts = weather_forecast(city['lat'], city['lon'])
         for forecast in daily_forecasts:
