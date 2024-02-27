@@ -17,6 +17,6 @@ def fetch_metadata(url):
     return results['data']
 
 # To manually test, please uncomment the following lines and run `python opengraph.py`:
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-pp.pprint(fetch_metadata("https://www.github.com"))
+#import pprint
+#pp = pprint.PrettyPrinter(indent=4)
+#pp.pprint(fetch_metadata("https://www.github.com"))
